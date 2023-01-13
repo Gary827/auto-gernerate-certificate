@@ -5,14 +5,15 @@ domain=$1
 commonname=$domain
 
 # my company details
-country="TW"
-state="Some-State"
-locality="Taipei"
-organization="衛生福利部國民健康署"
-organizationalunit="社區健康組"
-email="garywang0827@gmail.com"
+# read company-details.txt and get word by order
+country=$(cat ./company-details.txt | cut -d " " -f 1)
+state=$(cat ./company-details.txt | cut -d " " -f 2)
+locality=$(cat ./company-details.txt | cut -d " " -f 3)
+organization=$(cat ./company-details.txt | cut -d " " -f 4)
+organizationalunit=$(cat ./company-details.txt | cut -d " " -f 5)
+email=$(cat ./company-details.txt | cut -d " " -f 6)
 
-# -z 代表如果後方接空字串則為True
+-z, if variable is empty string, then return True
 if [ -z "$domain"]
 then
     echo "Argument not present"
@@ -20,27 +21,47 @@ then
     exit 99
 
 else
-    password=123456
-    echo "Generating key request for $domain"
+    # if Private key not exist，generate it
+    key = find . -type f -name "*.key"
+    if [ -z $key ]
+    then
+        password=123456
+        echo "Generating key request for $domain"
+        #Generate a Private Key
+        openssl genrsa -des3 -passout pass:$password -out server.key 2048
+        #Create the certreq.txt
+        echo "Creating CSR"
+        openssl req -new -key server.key -out certreq.txt -passin pass:$password \
+            -subj "/C=$country/ST=$state/L=$locality/O=$organization/OU=$organizationalunit/CN=$commonname/emailAddress=$email"
 
-    #Generate a Private Key
-    openssl genrsa -des3 -passout pass:$password -out server.key 2048
+        echo "---------------------------"
+        echo "-----Below is your CSR-----"
+        echo "---------------------------"
+        echo
+        cat certreq.txt
 
-    #Create the certreq.txt
-    echo "Creating CSR"
-    openssl req -new -key server.key -out certreq.txt -passin pass:$password \
-        -subj "/C=$country/ST=$state/L=$locality/O=$organization/OU=$organizationalunit/CN=$commonname/emailAddress=$email"
+        echo "---------------------------"
+        echo "-----Below is your Key-----"
+        echo "---------------------------"
+        echo
+        cat server.key
+    # if Private key exist，use same Private key to generate CSR
+    else
+        #Create the certreq.txt
+        echo "Creating CSR"
+        openssl req -new -key server.key -out certreq.txt -passin pass:$password \
+            -subj "/C=$country/ST=$state/L=$locality/O=$organization/OU=$organizationalunit/CN=$commonname/emailAddress=$email"
 
-    echo "---------------------------"
-    echo "-----Below is your CSR-----"
-    echo "---------------------------"
-    echo
-    cat certreq.txt
+        echo "---------------------------"
+        echo "-----Below is your CSR-----"
+        echo "---------------------------"
+        echo
+        cat certreq.txt
 
-    echo "---------------------------"
-    echo "-----Below is your Key-----"
-    echo "---------------------------"
-    echo
-    cat server.key
-
+        echo "---------------------------"
+        echo "-----Below is your Key-----"
+        echo "---------------------------"
+        echo
+        cat server.key
+    fi
 fi
