@@ -13,7 +13,7 @@ organization=$(cat ./company-details.txt | cut -d " " -f 4)
 organizationalunit=$(cat ./company-details.txt | cut -d " " -f 5)
 email=$(cat ./company-details.txt | cut -d " " -f 6)
 
--z, if variable is empty string, then return True
+#-z, if variable is empty string, then return True
 if [ -z "$domain"]
 then
     echo "Argument not present"
