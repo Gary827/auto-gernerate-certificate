@@ -13,4 +13,4 @@ https://www.jamescoyle.net/how-to/1073-bash-script-to-create-an-ssl-certificate-
 
 
 ## future work
-Let domain name as Private Key name and File name pf company-detail.txt
+Let domain name as Private Key name and File name
